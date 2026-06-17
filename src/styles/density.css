@@ -1,0 +1,53 @@
+/*
+|--------------------------------------------------------------------------
+| Density - Default
+|--------------------------------------------------------------------------
+*/
+
+.density-normal {
+  font-size: 12px;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Density - Compact (SAP)
+|--------------------------------------------------------------------------
+*/
+
+.density-compact {
+  font-size: 11px;
+}
+
+.density-compact table th,
+.density-compact table td {
+  padding: 4px 6px;
+  height: 32px;
+}
+
+.density-compact input,
+.density-compact select,
+.density-compact button {
+  height: 32px;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Density - Comfy
+|--------------------------------------------------------------------------
+*/
+
+.density-comfy {
+  font-size: 14px;
+}
+
+.density-comfy table th,
+.density-comfy table td {
+  padding: 10px 12px;
+  height: 44px;
+}
+
+.density-comfy input,
+.density-comfy select,
+.density-comfy button {
+  height: 40px;
+}

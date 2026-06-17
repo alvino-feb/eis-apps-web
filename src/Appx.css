@@ -1,0 +1,108 @@
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: #f4f6f8;
+}
+
+/* Layout */
+.app {
+  display: flex;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 220px;
+  background: #2f3e4d;
+  color: white;
+  height: 100vh;
+  transition: 0.3s;
+}
+
+.sidebar.collapsed {
+  width: 70px;
+}
+
+.sidebar .close-btn {
+  display: none;
+}
+
+/* Menu */
+.menu-item, .menu-link {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.menu-item:hover,
+.menu-link:hover {
+  background: #3f51b5;
+}
+
+/* Active */
+.active {
+  background: #90caf9;
+  color: black;
+}
+
+/* Chevron */
+.rotate {
+  transform: rotate(180deg);
+  transition: 0.3s;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: -250px;
+    top: 0;
+    z-index: 999;
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .sidebar .close-btn {
+    display: block;
+    margin: 10px;
+  }
+}
+
+/* Header */
+.header {
+  background: #90caf9;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Main */
+.main {
+  flex: 1;
+}
+
+.content {
+  padding: 20px;
+}
+
+/* Login */
+.login {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+}
+
+.transition-all {
+  transition: all 0.2s ease;
+}
