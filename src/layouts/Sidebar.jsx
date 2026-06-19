@@ -43,14 +43,15 @@ export default function Sidebar() {
     if (!userId) return;
 
     fetchMenu(userId,businessId,businessMemberId);
-      }, [
-        userId,
-        businessId,
-        businessMemberId,
-        fetchMenu,
-      ]);
+      }, 
+    [
+      userId,
+      businessId,
+      businessMemberId,
+      fetchMenu,
+    ]);
 
-  return (
+    return (
     <aside
       className={`
         ${

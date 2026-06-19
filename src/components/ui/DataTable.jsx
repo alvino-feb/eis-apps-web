@@ -1,82 +1,73 @@
 export default function DataTable({
-  columns,
-  data,
+  columns = [],
+  data = [],
 }) {
 
+  const hasData =
+    Array.isArray(data) &&
+    data.length > 0;
+
   return (
-    <table
-      className="
-        w-full
-      "
-    >
+
+    <table className="w-full">
 
       <thead>
-
         <tr>
-
-          {columns.map(
-            (column) => (
-
-              <th
-                key={column.key}
-                className="
-                  px-4
-                  py-3
-                  text-left
-                  bg-gray-50
-                  border-b
-                "
-              >
-                {column.title}
-              </th>
-
-            )
-          )}
-
+          {columns.map((col) => (
+            <th key={col.key}>
+              {col.title}
+            </th>
+          ))}
         </tr>
-
       </thead>
 
       <tbody>
 
-        {data.map(
-          (row, index) => (
+        {!hasData && (
 
-            <tr
-              key={index}
+          <tr>
+
+            <td
+              colSpan={columns.length}
               className="
-                hover:bg-gray-50
+                py-10
+                text-center
+                text-gray-500
               "
             >
 
-              {columns.map(
-                (column) => (
+              Tidak ada data
 
-                  <td
-                    key={column.key}
-                    className="
-                      px-4
-                      py-3
-                      border-b
-                    "
-                  >
+            </td>
 
-                    {column.render
-                      ? column.render(row)
-                      : row[column.key]}
+          </tr>
 
-                  </td>
+        )}
 
-                )
-              )}
+        {hasData &&
+          data.map((row, index) => (
+
+            <tr key={index}>
+
+              {columns.map((col) => (
+
+                <td key={col.key}>
+
+                  {col.render
+                    ? col.render(row)
+                    : row[col.key]}
+
+                </td>
+
+              ))}
 
             </tr>
 
-          )
-        )}
+          ))}
 
       </tbody>
 
     </table>
+
   );
 }
