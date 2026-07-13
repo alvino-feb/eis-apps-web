@@ -75,7 +75,7 @@ export default function BusinessMember(){
     const [saving, setSaving] =
     useState(false);
 
-    const [deleting, setDeleting] =
+    const [setDeleting] =
     useState(false);
 
     const [form, setForm] =
@@ -173,7 +173,7 @@ export default function BusinessMember(){
             setDeleting(true);
 
             await deleteBusinessMember(
-                businessMemberId
+                businessId,businessMemberId
             );
 
             await fetchBusinessMember(
@@ -188,13 +188,13 @@ export default function BusinessMember(){
     };
 
     useEffect(() => {
-  
         if (!businessId) return;
             fetchBusinessMember(businessId);
     }, 
     [
-        userId,
-        businessId
+    userId,
+    businessId,
+    fetchBusinessMember
     ]);
 
     const filteredMembers =
@@ -269,7 +269,7 @@ export default function BusinessMember(){
                 <button
                     onClick={() =>
                     handleDelete(
-                        row.businessMemberId
+                        row.id
                     )
                     }
                     className="
@@ -423,13 +423,7 @@ export default function BusinessMember(){
             </div>
 
             <div>
-                <label
-                    className="
-                        flex
-                        items-center
-                        gap-2
-                    "
-                    >
+                <label className="flex items-center gap-2">
                     <input
                         type="checkbox"
                         checked={form.isActive}
@@ -441,7 +435,6 @@ export default function BusinessMember(){
                         })
                         }
                     />
-
                     Active
                 </label>
             </div>
