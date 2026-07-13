@@ -10,9 +10,12 @@ import SamplePage2 from "../pages/sample/SamplePage2";
 
 // settings - system administration
 import BusinessInfo from "../pages/settings/system-administration/business-info/BusinessInfo";
+import UserManagement from "../pages/settings/system-administration/user-management/UserManagement";
 
 // settings - system setting
-import UserManagement from "../pages/appSettings/UserManagement/UserManagement";
+// import UserManagement from "../pages/appSettings/UserManagement/UserManagement";
+
+
 
 export default function AppRouter() {
   return (

@@ -2,6 +2,7 @@ export default function PageHeader({
   title,
   description,
   children,
+  action,
 }) {
   return (
     <div className="mb-6">
@@ -34,7 +35,7 @@ export default function PageHeader({
 
         </div>
 
-        {children}
+        {action || children}
 
       </div>
 

@@ -1,20 +1,32 @@
+import DataTableSkeleton from "../skeletons/DataTableSkeleton";
+
 export default function DataTable({
   columns = [],
   data = [],
+  onRowClick,
+  selectedRowId,
+  loading = false
 }) {
 
-  const hasData =
-    Array.isArray(data) &&
-    data.length > 0;
+  const safeColumns = Array.isArray(columns) ? columns : [];
+  const safeData = Array.isArray(data) ? data : [];
+
+  const hasData = safeData.length > 0;
 
   return (
-
     <table className="w-full">
 
-      <thead>
+      <thead> 
         <tr>
-          {columns.map((col) => (
-            <th key={col.key}>
+          {safeColumns.map((col) => (
+            <th key={col.key}
+                style={{
+                width: col.width,
+                minWidth: col.minWidth,
+                maxWidth: col.maxWidth,
+                className: col.headerClassName
+              }}
+            >
               {col.title}
             </th>
           ))}
@@ -23,51 +35,47 @@ export default function DataTable({
 
       <tbody>
 
+        {loading && (
+          <DataTableSkeleton
+            columns={columns.length}
+            rows={5}
+          />
+        )}
+
         {!hasData && (
-
           <tr>
-
             <td
-              colSpan={columns.length}
-              className="
-                py-10
-                text-center
-                text-gray-500
-              "
+              colSpan={safeColumns.length || 1}
+              className="py-10 text-center text-gray-500"
             >
-
-              Tidak ada data
-
+              No records found
             </td>
-
           </tr>
-
         )}
 
         {hasData &&
-          data.map((row, index) => (
-
-            <tr key={index}>
-
-              {columns.map((col) => (
-
-                <td key={col.key}>
-
+          safeData.map((row, rowIndex) => (
+            <tr key={row.id ?? rowIndex} 
+              onClick={() => onRowClick?.(row)}
+              className="cursor-pointer">
+              {safeColumns.map((col) => (
+                <td key={`${rowIndex}-${col.key}`}
+                  style={{
+                    width: col.width,
+                    minWidth: col.minWidth,
+                    maxWidth: col.maxWidth,
+                    className: col.cellClassName
+                  }}
+                >
                   {col.render
                     ? col.render(row)
-                    : row[col.key]}
-
+                    : row?.[col.key]}
                 </td>
-
               ))}
-
             </tr>
-
           ))}
-
       </tbody>
 
     </table>
-
   );
 }
