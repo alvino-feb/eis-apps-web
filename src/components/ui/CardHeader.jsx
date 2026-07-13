@@ -39,7 +39,11 @@ export default function CardHeader({
 
       </div>
 
-      {action}
+      {action && (
+        <div>
+          {action}
+        </div>
+      )}
 
     </div>
   );

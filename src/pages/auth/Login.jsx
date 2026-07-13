@@ -31,10 +31,10 @@ export default function Login() {
     validationSchema: Yup.object({
 
       username: Yup.string()
-        .required("Username wajib diisi"),
+        .required("Username is required"),
 
       password: Yup.string()
-        .required("Password wajib diisi"),
+        .required("Password is required"),
 
     }),
 
@@ -55,7 +55,7 @@ export default function Login() {
           userId: data.userId,
           username: data.username,
           businessId: data.businessId,
-          businessMembers:  data.businessMembers,
+          businessMembers: data.businessMembers,
           accessToken: data.accessToken,
           refreshToken: data.refreshToken,
         });

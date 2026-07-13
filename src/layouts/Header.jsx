@@ -196,7 +196,7 @@ export default function Header() {
 
             <button
               onClick={() =>
-                navigate("/select-store")
+                navigate("/select-member")
               }
               className="
                 w-full

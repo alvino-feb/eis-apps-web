@@ -136,7 +136,8 @@ export default function Business() {
   }, 
   [
     userId,
-    businessId
+    businessId,
+    fetchBusiness
   ]);
 
   return (
