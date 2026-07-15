@@ -49,8 +49,8 @@ from "./Drawer";
 export { default as StatusBadge }
 from "./StatusBadge";
 
-export { default as ConfirmDialog }
-from "./ConfirmDialog";
+// export { default as ConfirmDialog }
+// from "./ConfirmDialog";
 
 export { default as FormField }
 from "./FormField";

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-
 import {
   PageHeader,
   Card,
@@ -11,7 +10,6 @@ import {
   Modal,
   MenuTree
 } from "../../../../components/ui";
-
 import {
   Pencil,
   Trash2,
@@ -19,36 +17,28 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
-
 import { useAuthStore }
 from "../../../../store/authStore";
-
 import { sysAdminStore }
 from "../system-administration.store";
-
-import { useAppStore } from "../../../../store/appStore";
-
-import useToastStore from "../../../../store/toastStore";
-
+import { useAppStore } 
+from "../../../../store/appStore";
+import useToastStore 
+from "../../../../store/toastStore";
 import {
   buildMenuTree,
   updateMenuTree 
 } from "../../../../common/helpers/menu.js";
-
-import {
-  ROLE_PERMISSION,
-}
+import { ROLE_PERMISSION }
 from "../../../../common/helpers/role.js";
+import { confirm } from "../../../../common/helpers/confirm.js";
 
 export default function UserManagement() {
   const [selectedMember, setSelectedMember] = useState(null);
   const [selectedRole, setSelectedRole] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
-
   const businessId = useAuthStore((state) => state.businessId);
-
   const {setLoading} = useAppStore();
-  
   const isParent = (row) => row.type === "P";
 
   const {
@@ -295,15 +285,22 @@ export default function UserManagement() {
   };
 
   const handleDeleteUser = async (row) => {
-      if (!selectedUser) {
-          alert( "Please select a user.");
+      if (!row.username) {
+          showWarning(
+            "Please select a user !"
+          );
           return;
       }
 
-      if (!window.confirm("Delete this user?")
-      ) {
-          return;
-      }
+      const ok = await confirm({
+          title: "Delete User",
+          message: `Delete "${row.username}" ?`,
+          variant: "danger",
+          confirmText: "Delete",
+      });
+
+      if (!ok) return;
+
       try {
           await deleteUser(
               businessId,
@@ -320,7 +317,10 @@ export default function UserManagement() {
           setSelectedUser(null);
       }
       catch(err){
-          console.error(err);
+          showError(
+            err.response?.data?.message ??
+            "Failed to user !"
+          );
       }
   };
 
@@ -335,7 +335,9 @@ export default function UserManagement() {
 
   const handleAddRole = async () => {
     if (!selectedMember) {
-      alert("Please select a Business Member first.");
+      showWarning(
+        "Please select a business member !"
+      );
       return;
     }
 
@@ -362,7 +364,9 @@ export default function UserManagement() {
 
   const handleEditRole = async (row) => {
     if (!row.id) {
-      alert("Please select a role.");
+      showWarning(
+        "Please select a role !"
+      );
       return;
     }
 
@@ -391,15 +395,16 @@ export default function UserManagement() {
 
     const handleDeleteRole = async (row) => {
 
-      if (
-          !window.confirm(
-              "Delete this role?"
-          )
-      ) {
-          return;
-      }
-      try {
+      const ok = await confirm({
+          title: "Delete Role",
+          message: `Delete "${row.code}" ?`,
+          variant: "danger",
+          confirmText: "Delete",
+      });
 
+      if (!ok) return;
+
+      try {
         setLoading(true);
 
         await deleteRole(
@@ -1012,7 +1017,13 @@ export default function UserManagement() {
 
           <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
             <Button variant="secondary" onClick={handleCancelRole} disabled={roleSaving}>Cancel</Button>
-            <Button onClick={handleSaveRole} disabled={roleSaving}>Save</Button>
+            <Button onClick={handleSaveRole} disabled={roleSaving}>
+              {
+                roleSaving
+                  ? "Saving..."
+                  : "Save"
+              }
+            </Button>
           </div>
         </div>
       </Modal>
@@ -1180,7 +1191,13 @@ export default function UserManagement() {
 
           <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
             <Button variant="secondary" onClick={handleCancelUser}>Cancel</Button>
-            <Button onClick={handleSaveUser} disabled={savingUser}>Save</Button>
+            <Button onClick={handleSaveUser} disabled={savingUser}>
+              {
+                savingUser
+                  ? "Saving..."
+                  : "Save"
+              }
+            </Button>
           </div>
         </div>
       </Modal>
