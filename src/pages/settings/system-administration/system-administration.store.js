@@ -91,26 +91,21 @@ export const sysAdminStore = create((set, get) => ({
         businessId,
         payload
       ) => {
-
         try{
-
             get().setLoading(
                 "updateBusiness",
                 true
             );
-
             return await sysAdminService.updateBusinessInfo(
-            businessId,
-            payload);
+                businessId,
+                payload
+            );
         } finally {
-
             get().setLoading(
             "updateBusiness",
             false
             );
-
         }
-        
       },
 
     clearBusiness: () =>
