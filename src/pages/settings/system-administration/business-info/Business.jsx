@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
-
 import {
   Pencil,
   Trash2,
   Plus
 } from "lucide-react";
-
 import {
   PageHeader,
   Card,
@@ -17,20 +15,26 @@ import {
   Button,
   StatusBadge
 } from "../../../../components/ui";
-
 import { useAuthStore }
 from "../../../../store/authStore";
-
 import { sysAdminStore } 
 from "../system-administration.store"
-
+import useToastStore 
+from "../../../../store/toastStore";
 import BusinessMember from "./businessMember";
 
 export default function Business() {
   const [saving, setSaving] = useState(false);
+  const userId = useAuthStore((state) => state.userId);
+  const businessId = useAuthStore((state) => state.businessId);
+  const fetchBusiness = sysAdminStore((state) => state.fetchBusiness);
+  const business = sysAdminStore((state) => state.business);
+  const updateBusiness = sysAdminStore((state) => state.updateBusiness);
+  const [openBusinessModal, setOpenBusinessModal] = useState(false);
 
   const [form, setForm] =
   useState({
+    id:"",
     name: "",
     ownerName: "",
     type: "",
@@ -42,69 +46,36 @@ export default function Business() {
     nation: "",
   });
 
-  const userId =
-    useAuthStore(
-      (state) => state.userId
-  );
-  
-  const businessId =
-    useAuthStore(
-      (state) => state.businessId
-  );
-
-  const fetchBusiness =
-  sysAdminStore(
-    (state) => state.fetchBusiness
-  );
-
-  const business =
-  sysAdminStore(
-    (state) => state.business
-  );
-
-  const updateBusinessAction =
-  sysAdminStore(
-    (state) =>
-      state.updateBusiness
-  );
-
-  const [openBusinessModal, setOpenBusinessModal] =
-    useState(false);
+  const {
+    showSuccess,
+    showError,
+    // showWarning,
+    // showInfo,
+  } = useToastStore();
 
   const handleOpenEdit =
   () => {
     setForm({
-      name:
-        business?.name || "",
-      ownerName:
-        business?.ownerName || "",
-      type:
-        business?.type || "",
-      email:
-        business?.email || "",
-      phone:
-        business?.phone || "",
-      address:
-        business?.address || "",
-      city:
-        business?.city || "",
-      province:
-        business?.province || "",
-      nation:
-        business?.nation || "",
+      id: business?.id || "",
+      name: business?.name || "",
+      ownerName: business?.ownerName || "",
+      type: business?.type || "",
+      email: business?.email || "",
+      phone: business?.phone || "",
+      address: business?.address || "",
+      city: business?.city || "",
+      province: business?.province || "",
+      nation: business?.nation || "",
     });
-
-    setOpenBusinessModal(
-      true
-    );
+    setOpenBusinessModal(true);
   };
 
-  const handleSave =
-  async () => {
-    try {
+  const handleSave = async () => {
+
+    try {        
       setSaving(true);
 
-      await updateBusinessAction(
+      await updateBusiness(
         businessId,
         form
       );
@@ -113,20 +84,37 @@ export default function Business() {
         businessId
       );
 
-      setOpenBusinessModal(
-        false
+      setOpenBusinessModal(false);
+
+      showSuccess(
+        "Business save successfully."
       );
 
     } catch (err) {
-
-      console.error(err);
-      alert(
-        "Failed to update business"
+      showError(
+          err.response?.data?.message ??
+          "Failed to save business."
       );
-
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleCancel = () => {
+    setOpenBusinessModal(false);
+
+    setForm({
+      id: "",
+      name: "",
+      ownerName: "",
+      type: "",
+      email: "",
+      phone: "",
+      address: "",
+      city: "",
+      province: "",
+      nation: "",
+    });
 
   };
 
@@ -198,127 +186,148 @@ export default function Business() {
       </Card>
 
       {/* BUSINESS MODAL */}
-
       <Modal
         open={openBusinessModal}
-        onClose={() =>
-          setOpenBusinessModal(
-            false
-          )
-        }
+        onClose={handleCancel}
+        loading={saving}
         title="Edit Business Information"
       >
 
         <div className="grid gap-4">
           <div>
-            <label className="text-sm font-medium">Business Name</label>
-            <input value={form.name}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                name:
-                  e.target.value,
-              })
-            } className="mt-1 w-full border rounded-md px-3 py-2"/>
+            <label className="text-sm font-medium">ID</label>
+            <input value={form.id}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  id:
+                    e.target.value,
+                })
+              } 
+              readOnly
+              className="mt-1 w-full border rounded-md px-3 py-2 bg-gray-100"
+            />
           </div>
 
           <div>
-            <label className="text-sm font-medium">Owner </label>
+            <label className="text-sm font-medium">Business Name</label>
+            <input value={form.name}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  name:
+                    e.target.value,
+                })
+              } 
+              className="mt-1 w-full border rounded-md px-3 py-2"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">Owner</label>
             <input value={form.ownerName}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                ownerName:
-                  e.target.value,
-              })
-            } className="mt-1 w-full border rounded-md px-3 py-2"/>
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  ownerName:
+                    e.target.value,
+                })
+              } 
+              className="mt-1 w-full border rounded-md px-3 py-2"
+            />
           </div>
 
           <div>
             <label className="text-sm font-medium">Type</label>
             <select value={form.type}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                type:
-                  e.target.value,
-              })
-            } className=" mt-1 w-full border rounded-md px-3 py-2 " >
-                <option> PT </option>
-                <option> Perorangan  </option>
-                <option> Koperasi  </option>
-                <option> Limited  </option>
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  type:
+                    e.target.value,
+                })
+              } 
+              className="mt-1 w-full border rounded-md px-3 py-2 " 
+            >
+                <option>PT</option>
+                <option>Perorangan</option>
+                <option>Koperasi</option>
+                <option>Limited</option>
             </select>
           </div>
 
           <div>
             <label className="text-sm font-medium">Phone</label>
             <input value={form.phone}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                phone:
-                  e.target.value,
-              })
-            } className=" mt-1 w-full border rounded-md px-3 py-2"/>
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  phone:
+                    e.target.value,
+                })
+              } 
+              className=" mt-1 w-full border rounded-md px-3 py-2"
+            />
           </div>
 
           <div>
             <label className="text-sm font-medium">Address</label>
             <input value={form.address}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                address:
-                  e.target.value,
-              })
-            } className=" mt-1 w-full border rounded-md px-3 py-2"/>
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  address:
+                    e.target.value,
+                })
+              } 
+              className=" mt-1 w-full border rounded-md px-3 py-2"
+            />
           </div>
 
           <div>
             <label className="text-sm font-medium">City</label>
             <input value={form.city}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                city:
-                  e.target.value,
-              })
-            } className=" mt-1 w-full border rounded-md px-3 py-2"/>
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  city:
+                    e.target.value,
+                })
+              } 
+              className=" mt-1 w-full border rounded-md px-3 py-2"
+            />
           </div>
 
           <div>
             <label className="text-sm font-medium">Province</label>
             <input value={form.province}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                province:
-                  e.target.value,
-              })
-            } className=" mt-1 w-full border rounded-md px-3 py-2"/>
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  province:
+                    e.target.value,
+                })
+              } 
+              className=" mt-1 w-full border rounded-md px-3 py-2"
+            />
           </div>
 
           <div>
             <label className="text-sm font-medium">Nation</label>
             <input value={form.nation}
-          onChange={(e) =>
-            setForm({
-              ...form,
-              nation:
-                e.target.value,
-            })
-          } className=" mt-1 w-full border rounded-md px-3 py-2"/>
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  nation:
+                    e.target.value,
+                })
+              } 
+              className=" mt-1 w-full border rounded-md px-3 py-2"
+            />
           </div>
 
-          <div className=" flex justify-end gap-2 ">
-            <Button variant="secondary"
-              onClick={() =>
-                setOpenBusinessModal(
-                  false
-                )
-              }
-            >
+          <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
+            <Button variant="secondary" onClick={handleCancel}>
               Cancel
             </Button>
 

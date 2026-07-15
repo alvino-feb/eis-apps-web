@@ -9,20 +9,11 @@ import { Input, Button } from "../../components/ui";
 import { login } from "../../services/auth";
 
 export default function Login() {
-
   const navigate = useNavigate();
-
-  const { loading, setLoading } =
-    useAppStore();
-
-  const { setAuth, setBusinessMember } =
-    useAuthStore();
-
-  const [errorMsg, setErrorMsg] =
-    useState("");
-
+  const {loading, setLoading} = useAppStore();
+  const {setAuth, setBusinessMember} = useAuthStore();
+  const [errorMsg, setErrorMsg] = useState("");
   const formik = useFormik({
-
     initialValues: {
       username: "",
       password: "",
@@ -62,39 +53,24 @@ export default function Login() {
 
         if ( data.businessMembers?.length === 1 ) 
         {
-
           setBusinessMember(
             data.businessMembers[0]
           );
-
           navigate("/");
-
         } else {
-
           navigate(
             "/select-member"
           );
-
         }
-
       } catch (err) {
-
         setErrorMsg(
-
           err?.response?.data?.message ||
-
           "Login failed"
-
         );
-
       } finally {
-
         setLoading(false);
-
       }
-
     },
-
   });
 
   return (
@@ -104,16 +80,14 @@ export default function Login() {
         onSubmit={formik.handleSubmit}
         className="bg-white shadow-md rounded-lg p-8 w-80 border"
       >
-
         <h2 className="text-xl font-semibold text-gray-700 mb-6 text-center">
           Log In
         </h2>
-
-        {errorMsg && (
-          <div className="bg-red-100 text-red-600 text-sm p-2 mb-4 rounded">
-            {errorMsg}
-          </div>
-        )}
+          {errorMsg && (
+            <div className="bg-red-100 text-red-600 text-sm p-2 mb-4 rounded">
+              {errorMsg}
+            </div>
+          )}
 
         <Input
           label="Username"
@@ -141,20 +115,16 @@ export default function Login() {
         />
 
         <div className="flex justify-end mt-4">
-
           <Button
             type="submit"
             disabled={loading}
           >
-
             {
               loading
                 ? "Loading..."
                 : "Login"
             }
-
           </Button>
-
         </div>
 
         <p className="text-xs text-gray-400 text-center mt-4">
