@@ -8,6 +8,9 @@ import Home from "../pages/Home";
 import SamplePage1 from "../pages/sample/SamplePage1";
 import SamplePage2 from "../pages/sample/SamplePage2";
 
+// inventory
+import WarehouseType from "../pages/inventory/tables/warehouse-type/WarehouseType";
+
 // settings - system administration
 import BusinessInfo from "../pages/settings/system-administration/business-info/BusinessInfo";
 import UserManagement from "../pages/settings/system-administration/user-management/UserManagement";
@@ -44,6 +47,10 @@ export default function AppRouter() {
         >
           {/* CHILDREN ROUTES */}
           <Route index element={<Home />} />
+          
+          {/* INVENTORY */}
+          <Route path="in/tables/warehouse-type" element={<WarehouseType />} />
+
           {/* 🔥 SAMPLE PAGES */}
           <Route path="sample-page/page1" element={<SamplePage1 />} />
           <Route path="sample-page/page2" element={<SamplePage2 />} />

@@ -17,7 +17,7 @@ export const updateBusinessInfo = (
     payload
 );
 
-// *********************** BUSINESS MEMBER ***********************//
+// *********************** BUSINESS MEMBER *********************** // 
 export const getBusinessMembers = (
   businessId
 ) =>
