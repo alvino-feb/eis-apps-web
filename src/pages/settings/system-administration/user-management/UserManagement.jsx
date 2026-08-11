@@ -52,7 +52,7 @@ export default function UserManagement() {
   //VIEW
   const fetchBusinessMember = sysAdminStore((state) => state.fetchBusinessMember);
   const businessMember = sysAdminStore((state) => state.businessMember) || [];
-  const memberLoading = sysAdminStore((state) =>state.loading.businessMember);
+  const memberLoading = sysAdminStore((state) => state.loading.businessMember);
 
   //------- ROLE -------//
   //VIEW

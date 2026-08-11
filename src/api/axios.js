@@ -37,6 +37,8 @@ API.interceptors.response.use(
     const originalRequest =
       error.config;
 
+    const status = error.response?.status;
+
     if (
       originalRequest?.url?.includes(
         "/api/auth/refresh-token"
@@ -102,6 +104,21 @@ API.interceptors.response.use(
 
     }
 
+    switch(status){
+        case 403:
+            window.location.href =
+            "/error";
+            break;
+        case 404:
+            window.location.href =
+            "/error";
+            break;
+        case 500:
+            window.location.href =
+            "/error";
+            break;
+    }
+  
     return Promise.reject(
       error
     );

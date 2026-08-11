@@ -20,11 +20,12 @@ export default function DataTable({
         <tr>
           {safeColumns.map((col) => (
             <th key={col.key}
+                className={col.headerClassName}
                 style={{
                 width: col.width,
                 minWidth: col.minWidth,
                 maxWidth: col.maxWidth,
-                className: col.headerClassName
+                // className: col.headerClassName
               }}
             >
               {col.title}
@@ -60,11 +61,12 @@ export default function DataTable({
               className="cursor-pointer">
               {safeColumns.map((col) => (
                 <td key={`${rowIndex}-${col.key}`}
+                    className={col.cellClassName}
                   style={{
                     width: col.width,
                     minWidth: col.minWidth,
                     maxWidth: col.maxWidth,
-                    className: col.cellClassName
+                    // className: col.cellClassName
                   }}
                 >
                   {col.render

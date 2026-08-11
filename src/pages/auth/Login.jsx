@@ -36,16 +36,15 @@ export default function Login() {
         setLoading(true);
         setErrorMsg("");
 
-        const result =
-          await login(values);
+        const result = await login(values);
 
-        const data =
-          result.data;
+        const data = result.data;
         
         setAuth({
           userId: data.userId,
           username: data.username,
           businessId: data.businessId,
+          businessName: data.businessName,
           businessMembers: data.businessMembers,
           accessToken: data.accessToken,
           refreshToken: data.refreshToken,

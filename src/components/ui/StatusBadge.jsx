@@ -6,17 +6,19 @@ import {
 
 export default function StatusBadge({
   active,
+  activeText = "Active", 
+  inactiveText = "Inactive",
 }) {
 
   return active ? (
     <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-green-50 text-green-700">
       <CheckCircle2 size={14} />
-      Active
+      {activeText}
     </span>
   ) : (
     <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-red-50 text-red-700">
       <XCircle size={14} />
-      Inactive
+      {inactiveText}
     </span>
   );
 

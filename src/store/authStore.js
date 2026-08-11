@@ -1,22 +1,12 @@
 import { create } from "zustand";
 
 export const useAuthStore = create((set) => ({
-
-  userId:
-    localStorage.getItem("userId"),
-
-  username:
-    localStorage.getItem("username"),
-
-  businessId:
-    localStorage.getItem("businessId"),
-
-  accessToken:
-    localStorage.getItem("accessToken"),
-
-  refreshToken:
-    localStorage.getItem("refreshToken"),
-
+  userId: localStorage.getItem("userId"),
+  username: localStorage.getItem("username"),
+  businessId: localStorage.getItem("businessId"),
+  businessName: localStorage.getItem("businessName"),
+  accessToken: localStorage.getItem("accessToken"),
+  refreshToken: localStorage.getItem("refreshToken"),
   businessMembers: JSON.parse(
     localStorage.getItem(
       "businessMembers"
@@ -30,7 +20,6 @@ export const useAuthStore = create((set) => ({
   ),
 
   setAuth: (data) => {
-
     localStorage.setItem(
       "userId",
       data.userId
@@ -44,6 +33,11 @@ export const useAuthStore = create((set) => ({
     localStorage.setItem(
       "businessId",
       data.businessId
+    );
+
+    localStorage.setItem(
+      "businessName",
+      data.businessName
     );
 
     localStorage.setItem(
@@ -64,25 +58,13 @@ export const useAuthStore = create((set) => ({
     );
 
     set({
-
-      userId:
-        data.userId,
-
-      username:
-        data.username,
-
-      businessId:
-        data.businessId,
-
-      businessMembers:
-        data.businessMembers || [],
-
-      accessToken:
-        data.accessToken,
-
-      refreshToken:
-        data.refreshToken,
-
+      userId: data.userId,
+      username: data.username,
+      businessId: data.businessId,
+      businessName: data.businessName,
+      businessMembers: data.businessMembers || [],
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken,
     });
 
   },
@@ -123,21 +105,14 @@ export const useAuthStore = create((set) => ({
     localStorage.clear();
 
     set({
-
       userId: null,
-
       username: null,
-
       businessId: null,
-
+      businessName: null,
       accessToken: null,
-
       refreshToken: null,
-
       businessMembers: [],
-
       selectedBusinessMember: null,
-
     });
 
   },
