@@ -2,6 +2,7 @@ import { colors } from "../../theme/colors";
 
 export default function Button({
   children,
+  disabled = false,
   variant = "primary",
   loading,
   ...props
@@ -15,9 +16,9 @@ export default function Button({
   return (
     <button
       {...props}
-      disabled={loading}
+      disabled={disabled || loading}
       className={`px-4 py-2 rounded transition ${styleMap[variant]} ${
-        loading && "opacity-50"
+        disabled || loading && "opacity-50"
       }`}
     >
       {loading ? "Loading..." : children}

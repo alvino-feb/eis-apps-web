@@ -16,19 +16,17 @@ export const useAppSettingStore = create((set) => ({
 
     setLoading: (val) => set({ loading: val }),
     
-    fetchMenu: async (userId,businessId,businessMemberId) => {
+    fetchMenu: async (businessId,userId) => {
         try {
             set({
                 loading: true,
                 error: null,
             });
             
-            const data = await appSettingService.getUserMenu(businessId,businessMemberId,userId);
+            const data = await appSettingService.getUserMenu(businessId,userId);
            
             set({ menu: data.data.data });
         } catch (err) {
-            console.error(err);
-            
             set({
                 error:
                 err.response?.data?.message ||

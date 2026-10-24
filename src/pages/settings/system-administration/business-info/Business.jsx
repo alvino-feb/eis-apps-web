@@ -1,8 +1,12 @@
 import { useState, useEffect } from "react";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import {
+  LogOut,
+  Store,
   Pencil,
-  Trash2,
-  Plus
+  Plus,
+  Trash2
 } from "lucide-react";
 import {
   PageHeader,
@@ -11,123 +15,178 @@ import {
   Toolbar,
   SearchInput,
   DataTable,
+  DataTableV2,
   Modal,
   Button,
-  StatusBadge
+  StatusBadge,
+  Select,
+  FilterPanel,
+  TextInput,
+  Checkbox
 } from "../../../../components/ui";
-import { useAuthStore }
-from "../../../../store/authStore";
-import { sysAdminStore } 
-from "../system-administration.store"
-import useToastStore 
-from "../../../../store/toastStore";
-import BusinessMember from "./businessMember";
+import { useAuthStore } from "../../../../store/authStore";
+import { sysAdminStore } from "../system-administration.store"
+import useToastStore from "../../../../store/toastStore";
+import { hasChanges } from "../../../../common/helpers/object.js";
+import { BUSINESS_TYPE_OPTIONS } from "../../../../common/constants/enum.js";
 
 export default function Business() {
-  const [saving, setSaving] = useState(false);
-  const userId = useAuthStore((state) => state.userId);
+  
   const businessId = useAuthStore((state) => state.businessId);
+  const userId = useAuthStore((state) => state.userId);
   const fetchBusiness = sysAdminStore((state) => state.fetchBusiness);
   const business = sysAdminStore((state) => state.business);
   const updateBusiness = sysAdminStore((state) => state.updateBusiness);
   const [openBusinessModal, setOpenBusinessModal] = useState(false);
-
-  const [form, setForm] =
-  useState({
-    id:"",
-    name: "",
-    ownerName: "",
-    type: "",
-    email: "",
-    phone: "",
-    address: "",
-    city: "",
-    province: "",
-    nation: "",
-  });
+  const [saving, setSaving] = useState(false);
+  
+  const [editingData, setEditingData] = useState(null);
+  const [originalData, setOriginalData] = useState(null);
 
   const {
     showSuccess,
     showError,
-    // showWarning,
-    // showInfo,
+    showWarning,
+    showInfo,
   } = useToastStore();
 
-  const handleOpenEdit =
+  const handleOpenModal =
   () => {
-    setForm({
-      id: business?.id || "",
-      name: business?.name || "",
-      ownerName: business?.ownerName || "",
-      type: business?.type || "",
-      email: business?.email || "",
-      phone: business?.phone || "",
-      address: business?.address || "",
-      city: business?.city || "",
-      province: business?.province || "",
-      nation: business?.nation || "",
-    });
+    setEditingData(business);
+    setOriginalData(business);
     setOpenBusinessModal(true);
   };
 
-  const handleSave = async () => {
-
-    try {        
-      setSaving(true);
-
-      await updateBusiness(
-        businessId,
-        form
-      );
-
-      await fetchBusiness(
-        businessId
-      );
-
+  const handleCloseModal = () => {
+      formik.resetForm();
       setOpenBusinessModal(false);
-
-      showSuccess(
-        "Business save successfully."
-      );
-
-    } catch (err) {
-      showError(
-          err.response?.data?.message ??
-          "Failed to save business."
-      );
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleCancel = () => {
-    setOpenBusinessModal(false);
-
-    setForm({
-      id: "",
-      name: "",
-      ownerName: "",
-      type: "",
-      email: "",
-      phone: "",
-      address: "",
-      city: "",
-      province: "",
-      nation: "",
-    });
-
+      setEditingData(null);
+      setOriginalData(null);
   };
 
   useEffect(() => {
     if (!businessId) return;
       fetchBusiness(businessId);
-  }, 
-  [
-    userId,
+    }, 
+    [
     businessId,
     fetchBusiness
-  ]);
+    ]
+  );
 
+  const validationSchema = Yup.object({
+      name: Yup.string()
+          .required("Name is required")
+          .max(100,"Name maximum 100 characters"),
+
+      type: Yup.string()
+          .required("type is required"),
+
+      phone: Yup.string()
+          .required("Phone number is required"),
+      
+      address: Yup.string()
+          .required("Address Date is required"),
+  });
+      
+  /*
+  * =========================================================
+  * PRICELIST FORMIK
+  * =========================================================
+  */
+  const formik = useFormik({
+      initialValues:
+          editingData ? {
+              name: editingData.name ?? "",
+              type: editingData.type ?? "",
+              ownerName: editingData.ownerName ?? "",
+              phone: editingData.phone ?? "",
+              address: editingData.address ?? "",
+              nation: editingData.nation ?? "",
+              province: editingData.province ?? "",
+              city: editingData.city ?? "",
+              isActive: editingData.isActive ?? true,
+          } : {
+              name: "",
+              type: "",
+              ownerName:"",
+              phone:"",
+              address: "",
+              nation: "",
+              province: "",
+              city: "",
+              isActive: true,
+          },
+
+      enableReinitialize: true,
+
+      validationSchema,
+
+      onSubmit: async (values) => {
+          try {
+              /*
+                * =========================================
+                * UPDATE
+                * =========================================
+                */
+              if (editingData) {
+                  const changed =
+                      hasChanges(
+                          originalData,
+                          values,
+                          [
+                              "name",
+                              "type",
+                              "ownerName",
+                              "phone",
+                              "address",
+                              "nation",
+                              "province",
+                              "city",
+                              "isActive"
+                          ]
+                      );
+
+                  if (!changed) {
+                      showWarning("No changes detected.");
+                      handleCloseModal();
+                      return;
+                  }
+
+                  await updateBusiness(
+                      businessId,
+                      values
+                  );
+
+                  fetchBusiness(businessId);
+              }
+
+              /*
+                * =========================================
+                * CREATE
+                * =========================================
+                */
+              else {
+                  // await createPricelist(
+                  //     businessId,
+                  //     businessMemberId,
+                  //     values
+                  // );
+              }
+
+              handleCloseModal();
+
+              showSuccess("Data saved successfully.");
+
+          } catch (err) {
+              showError(
+                  err.response?.data?.message ??
+                  "Failed to save pricelist."
+              );
+          }
+      },
+  });
+  
   return (
     <div>
       <Card>
@@ -135,7 +194,7 @@ export default function Business() {
           title="Business Information"
           description="General information about business"
           action={
-            <Button onClick={handleOpenEdit}>
+            <Button onClick={handleOpenModal}>
               <Pencil size={14} />
             </Button>
           }
@@ -188,159 +247,237 @@ export default function Business() {
       {/* BUSINESS MODAL */}
       <Modal
         open={openBusinessModal}
-        onClose={handleCancel}
+        onClose={handleCloseModal}
         loading={saving}
         title="Edit Business Information"
       >
+        <form onSubmit={formik.handleSubmit} className="space-y-3">
+          <div className="grid gap-4">
 
-        <div className="grid gap-4">
-          <div>
-            <label className="text-sm font-medium">ID</label>
-            <input value={form.id}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  id:
-                    e.target.value,
-                })
-              } 
-              readOnly
-              className="mt-1 w-full border rounded-md px-3 py-2 bg-gray-100"
+            {/* Name*/}
+            <div>
+              <label className="mb-1 block text-sm font-medium">
+                  Name
+              </label>
+
+              <TextInput
+                  name="name"
+                  value={formik.values.name}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={
+                      formik.touched.name &&
+                      formik.errors.name
+                  }
+              />
+              {formik.touched.name &&
+                  formik.errors.name && (
+                      <p className="mt-1 text-xs text-red-500">
+                          {formik.errors.name}
+                      </p>
+                  )}
+            </div>
+            
+            {/* Type*/}
+            <div>
+              <label className="mb-1 block text-sm font-medium">
+                  Type
+              </label>
+              <Select
+                  name="type"
+                  options={BUSINESS_TYPE_OPTIONS}
+                  value={formik.values.type}
+                  onChange={(value) =>
+                      formik.setFieldValue(
+                          "type",
+                          value
+                      )
+                  }
+                  error={
+                      formik.touched.type &&
+                      formik.errors.type
+                  }
+              />
+              {formik.touched.type &&
+              formik.errors.type && (
+                  <p className="mt-1 text-xs text-red-500">
+                      {formik.errors.type}
+                  </p>
+              )}
+            </div>
+
+            {/* Owner Name */}
+            <div>
+              <label className="mb-1 block text-sm font-medium">
+                  Owner Name
+              </label>
+
+              <TextInput
+                  name="ownerName"
+                  value={formik.values.ownerName}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={
+                      formik.touched.ownerName &&
+                      formik.errors.ownerName
+                  }
+              />
+              {formik.touched.ownerName &&
+                  formik.errors.ownerName && (
+                      <p className="mt-1 text-xs text-red-500">
+                          {formik.errors.ownerName}
+                      </p>
+                  )}
+            </div>
+
+            {/* Phone */}
+            <div>
+              <label className="mb-1 block text-sm font-medium">
+                  Phone
+              </label>
+
+              <TextInput
+                  name="phone"
+                  value={formik.values.phone}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={
+                      formik.touched.phone &&
+                      formik.errors.phone
+                  }
+              />
+              {formik.touched.phone &&
+                  formik.errors.phone && (
+                      <p className="mt-1 text-xs text-red-500">
+                          {formik.errors.phone}
+                      </p>
+                  )}
+            </div>
+
+            {/* Address */}
+            <div>
+              <label className="mb-1 block text-sm font-medium">
+                  Address
+              </label>
+
+              <TextInput
+                  name="address"
+                  value={formik.values.address}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={
+                      formik.touched.address &&
+                      formik.errors.address
+                  }
+              />
+              {formik.touched.address &&
+                  formik.errors.address && (
+                      <p className="mt-1 text-xs text-red-500">
+                          {formik.errors.address}
+                      </p>
+                  )}
+            </div>
+
+            {/* Nation */}
+            <div>
+              <label className="mb-1 block text-sm font-medium">
+                  Nation
+              </label>
+
+              <TextInput
+                  name="nation"
+                  value={formik.values.nation}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={
+                      formik.touched.nation &&
+                      formik.errors.nation
+                  }
+              />
+              {formik.touched.nation &&
+                  formik.errors.nation && (
+                      <p className="mt-1 text-xs text-red-500">
+                          {formik.errors.nation}
+                      </p>
+                  )}
+            </div>
+
+            {/* Province */}
+            <div>
+              <label className="mb-1 block text-sm font-medium">
+                  Province
+              </label>
+
+              <TextInput
+                  name="province"
+                  value={formik.values.province}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={
+                      formik.touched.province &&
+                      formik.errors.province
+                  }
+              />
+              {formik.touched.province &&
+                  formik.errors.province && (
+                      <p className="mt-1 text-xs text-red-500">
+                          {formik.errors.province}
+                      </p>
+                  )}
+            </div>
+            
+            {/* City */}
+            <div>
+              <label className="mb-1 block text-sm font-medium">
+                  City
+              </label>
+
+              <TextInput
+                  name="city"
+                  value={formik.values.city}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={
+                      formik.touched.city &&
+                      formik.errors.city
+                  }
+              />
+              {formik.touched.city &&
+                  formik.errors.city && (
+                      <p className="mt-1 text-xs text-red-500">
+                          {formik.errors.city}
+                      </p>
+                  )}
+            </div>
+
+            <Checkbox
+                label="Active"
+                name="isActive"
+                checked={formik.values.isActive}
+                onChange={(e) =>
+                    formik.setFieldValue(
+                        "isActive",
+                        e.target.checked
+                    )
+                }
             />
-          </div>
 
-          <div>
-            <label className="text-sm font-medium">Business Name</label>
-            <input value={form.name}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  name:
-                    e.target.value,
-                })
-              } 
-              className="mt-1 w-full border rounded-md px-3 py-2"
-            />
-          </div>
+            <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
+              <Button variant="secondary" type="button" onClick={handleCloseModal}>
+                Cancel
+              </Button>
 
-          <div>
-            <label className="text-sm font-medium">Owner</label>
-            <input value={form.ownerName}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  ownerName:
-                    e.target.value,
-                })
-              } 
-              className="mt-1 w-full border rounded-md px-3 py-2"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-medium">Type</label>
-            <select value={form.type}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  type:
-                    e.target.value,
-                })
-              } 
-              className="mt-1 w-full border rounded-md px-3 py-2 " 
-            >
-                <option>PT</option>
-                <option>Perorangan</option>
-                <option>Koperasi</option>
-                <option>Limited</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium">Phone</label>
-            <input value={form.phone}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  phone:
-                    e.target.value,
-                })
-              } 
-              className=" mt-1 w-full border rounded-md px-3 py-2"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-medium">Address</label>
-            <input value={form.address}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  address:
-                    e.target.value,
-                })
-              } 
-              className=" mt-1 w-full border rounded-md px-3 py-2"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-medium">City</label>
-            <input value={form.city}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  city:
-                    e.target.value,
-                })
-              } 
-              className=" mt-1 w-full border rounded-md px-3 py-2"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-medium">Province</label>
-            <input value={form.province}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  province:
-                    e.target.value,
-                })
-              } 
-              className=" mt-1 w-full border rounded-md px-3 py-2"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-medium">Nation</label>
-            <input value={form.nation}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  nation:
-                    e.target.value,
-                })
-              } 
-              className=" mt-1 w-full border rounded-md px-3 py-2"
-            />
-          </div>
-
-          <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
-            <Button variant="secondary" onClick={handleCancel}>
-              Cancel
-            </Button>
-
-            <Button onClick={handleSave} disabled={saving}>
-              {
-                saving
+              <Button type="submit" disabled={saving}>
+               {saving
                   ? "Saving..."
-                  : "Save"
-              }
-            </Button>
+                  : editingData
+                      ? "Update"
+                      : "Save"
+                }
+              </Button>
+            </div>
           </div>
-        </div>
-
+        </form>
       </Modal>
 
     </div>

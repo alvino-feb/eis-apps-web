@@ -13,9 +13,14 @@ import {
   Toolbar,
   SearchInput,
   DataTable,
+  DataTableV2,
   Modal,
   Button,
-  StatusBadge
+  StatusBadge,
+  Select,
+  FilterPanel,
+  TextInput,
+  Checkbox
 } from "../../../../components/ui";
 import { useAuthStore }
 from "../../../../store/authStore";
@@ -27,6 +32,7 @@ import {
   hasChanges 
 } from "../../../../common/helpers/object.js";
 import { confirm } from "../../../../common/helpers/confirm.js";
+import { BUSINESS_MEMBER_TYPE_OPTIONS } from "../../../../common/constants/enum.js";
 
 export default function BusinessMember(){
     const userId = useAuthStore((state) => state.userId);
@@ -51,25 +57,48 @@ export default function BusinessMember(){
         // showInfo,
     } = useToastStore();
 
+    const validationSchema = Yup.object({
+          name: Yup.string()
+              .required("Name is required")
+              .max(100,"Name maximum 100 characters"),
+    
+          type: Yup.string()
+              .required("type is required"),
+    
+          phone: Yup.string()
+              .required("Phone number is required"),
+          
+          address: Yup.string()
+              .required("address Date is required"),
+      });
+
     const formik = useFormik({
-        initialValues: {
+
+        initialValues:
+        editingMember ? {
+            id: editingMember.id ?? "",
+            code: editingMember.code ?? "",
+            name: editingMember.name ?? "",
+            phone: editingMember.phone ?? "",
+            type: editingMember.type ?? "",
+            address: editingMember.address ?? "",
+            url: editingMember.url ?? "",
+            init : editingMember.init ?? "",
+            isActive: editingMember.isActive ?? true,
+        } : {
             code: "",
             name: "",
             phone: "",
-            type:"",
+            type: "",
             address: "",
             url: "",
+            init: "",
             isActive: true,
         },
 
-        validationSchema: Yup.object({
-            code: Yup.string().required("Code is required"),
-            name: Yup.string().required("Name is required"),
-            phone: Yup.string().required("Phon is required"),
-            type: Yup.string().required("Type is required"),
-            address: Yup.string().required("Address"),
-            url: Yup.string().required("Url is required"),
-        }),
+        enableReinitialize: true,
+
+        validationSchema,
 
         onSubmit: async (values) => {
             try {
@@ -85,6 +114,7 @@ export default function BusinessMember(){
                             "type",
                             "address",
                             "url",
+                            "init",
                             "isActive",
                         ]
                     );
@@ -97,22 +127,28 @@ export default function BusinessMember(){
                         return;
                     }
 
+                    const payload = {
+                        ...values,
+                        init: values.init === "INIT" ? "INIT-Y" : values.init,
+                    };
+
                     await updateBusinessMember(
                         editingMember.id,
-                        values,
+                        payload,
                     );
+
                 } else {
                     await createBusinessMember({
                         ...values,
                         businessId,
                     });
                 }
+                
+                handleCloseModal();
 
                 await fetchBusinessMember(
                     businessId
                 );
-
-                setOpenMemberModal(false);
 
                 showSuccess(
                     "Business member save successfully."
@@ -134,26 +170,18 @@ export default function BusinessMember(){
         setOpenMemberModal(true);
     };
 
-    const handleEdit = (member) => {
-        setEditingMember(member);
-        setOriginalMember(member);
-        formik.setValues({
-            code: member.code ?? "",
-            name: member.name ?? "",
-            phone: member.phone ?? "",
-            type: member.type ?? "",
-            address: member.address ?? "",
-            url: member.url ?? "",
-            isActive: member.isActive ?? true,
-        });
+    const handleEdit = (row) => {       
+        setEditingMember(row);
+        setOriginalMember(row);
         setOpenMemberModal(true);
     };
 
-    const handleCancel = () => {
-        formik.resetForm();
-        setEditingMember(null);
-        setOpenMemberModal(false);
-    };
+    const handleCloseModal = () => {
+      formik.resetForm();
+      setOpenMemberModal(false);
+      setEditingMember(null);
+      setOriginalMember(null);
+  };
 
     const handleDelete = async (member) => {
         const ok = await confirm({
@@ -250,7 +278,9 @@ export default function BusinessMember(){
             render: (row) => (
                 <div className="flex gap-1">
                     <button 
-                        onClick={() => handleEdit(row)}
+                        onClick={(e) => {e.stopPropagation();
+                            handleEdit(row);
+                        }}
                         className="p-2 rounded-md hover:bg-blue-50 text-blue-600"
                     >
                         <Pencil size={16} />
@@ -303,7 +333,7 @@ export default function BusinessMember(){
       {/* MEMBER MODAL */}
         <Modal
             open={openMemberModal}
-            onClose={() => setOpenMemberModal(false)}
+            onClose={handleCloseModal}
             loading={saving}
             title={
                 editingMember
@@ -311,18 +341,21 @@ export default function BusinessMember(){
                     : "Add Business Member"
                 }
         >
-            <form
-                onSubmit={formik.handleSubmit}
-                // className="bg-white shadow-md rounded-lg p-8 border"
-            >
+            <form onSubmit={formik.handleSubmit} className="space-y-3">
                 <div className="grid gap-4">
                     <div>
-                        <label className="text-sm font-medium">Code</label>
+                        <label className="text-sm font-medium">
+                            Code
+                        </label>
                         <input 
                             name="code"
                             value={formik.values.code}
                             onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
+                            disabled={
+                                !!editingMember &&
+                                formik.initialValues.init !== "INIT"
+                            }
                             error={
                                 formik.touched.code &&
                                 formik.errors.code
@@ -354,27 +387,30 @@ export default function BusinessMember(){
                             </p>
                         )}
                     </div>
+
+                    {/* Type*/}
                     <div>
-                        <label className="text-sm font-medium">Type</label>
-                        <select 
+                        <label className="mb-1 block text-sm font-medium">
+                            Type
+                        </label>
+                        <Select
                             name="type"
+                            options={BUSINESS_MEMBER_TYPE_OPTIONS}
                             value={formik.values.type}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
+                            onChange={(value) =>
+                                formik.setFieldValue(
+                                    "type",
+                                    value
+                                )
+                            }
                             error={
                                 formik.touched.type &&
                                 formik.errors.type
                             }
-                            className=" mt-1 w-full border rounded-md px-3 py-2 " 
-                        >
-                            <option value="">-- Select Type --</option>
-                            <option>Electronic</option>
-                            <option>Retail</option>
-                            <option>FnB </option>
-                            <option>Accesoris</option>
-                        </select>
-                        {formik.touched.type && formik.errors.type && (
-                            <p className="mt-1 text-sm text-red-500">
+                        />
+                        {formik.touched.type &&
+                        formik.errors.type && (
+                            <p className="mt-1 text-xs text-red-500">
                                 {formik.errors.type}
                             </p>
                         )}
@@ -461,7 +497,7 @@ export default function BusinessMember(){
                         <Button
                             type="button"
                             variant="secondary"
-                            onClick={handleCancel}
+                            onClick={handleCloseModal}
                         >
                             Cancel
                         </Button>

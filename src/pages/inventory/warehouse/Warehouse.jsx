@@ -33,16 +33,17 @@ import {
 } from "../../../common/helpers/object.js";
 import { confirm } from "../../../common/helpers/confirm.js";
 import { warehouseStore } from "./warehouse.store.js";
-import { tableInventoryStore } from "../tables/tables.store.js";
+import { warehouseReferenceStore } from "../tables/warehouse-reference/warehouse-reference.store.js";
 
 export default function Warehouse(){
     const [openModal, setOpenModal] = useState(false);
     const [originalData, setOriginalData] = useState(null);
     const [editingData, setEditingData] = useState(null);
     
-    const [page,setPage]=useState(1);
-    const [limit,setLimit]=useState(20);
-    const [search,setSearch]=useState("");
+    const [page, setPage]=useState(1);
+    const [limit, setLimit]=useState(20);
+    const [search, setSearch]=useState("");
+    const [appliedSearch, setAppliedSearch] = useState("");
     const [sortBy]=useState("name");
     const [sortOrder]=useState("asc");
 
@@ -61,12 +62,11 @@ export default function Warehouse(){
     const createWarehouse = warehouseStore((state) => state.createWarehouse);
     const updateWarehouse = warehouseStore((state) => state.updateWarehouse);
     const deleteWarehouse = warehouseStore((state) => state.deleteWarehouse);
-    // const [warehouseTypeId, setWarehouseTypeId] = useState("");
-    const fetchWarehouseType = tableInventoryStore((state) => state.fetchWarehouseType);
-    const warehouseType = tableInventoryStore((state) => state.warehouseType);
+
+    const fetchWarehouseType = warehouseReferenceStore((state) => state.fetchWarehouseType);
+    const warehouseType = warehouseReferenceStore((state) => state.warehouseType);
     const businessMemberId = selectedBusinessMember.businessMemberId;
-    // const [filterOpen, setFilterOpen] = useState(false);
-    // const {setLoading} = tableInventoryStore();
+
     const saving = warehouseStore((state) => state.loading.saveWarehouse);
     const [refreshing, setRefreshing] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
@@ -97,6 +97,11 @@ export default function Warehouse(){
         isActive: "",
     });
 
+    /*
+        * =========================================================
+        * DATA
+        * =========================================================
+    */
     const rows = warehouse?.data ?? [];
     const meta = warehouse?.meta ?? {
         page: 1,
@@ -106,6 +111,13 @@ export default function Warehouse(){
         hasPrevious: false,
         hasNext: false,
     };
+    const warehouseTypeRows = warehouseType?.data ?? [];
+
+    const warehouseTypeOptions =
+    warehouseTypeRows.map((item) => ({
+        value: item.id,
+        label: `${item.code} - ${item.name}`,
+    }));
 
     const filterFields = [
         {
@@ -113,10 +125,8 @@ export default function Warehouse(){
             label: "Warehouse Type",
             type: "select",
             valueField: "id",
-            labelField: "name",
-            secondaryField: "code",
             placeholder: "- Select -",
-            options: warehouseType,
+            options: warehouseTypeOptions,
         },
         {
             key: "isActive",
@@ -138,7 +148,7 @@ export default function Warehouse(){
                 businessMemberId,
                 page,
                 limit,
-                search: search,
+                search: appliedSearch,
                 warehouseTypeId: appliedFilters.warehouseTypeId,
                 isActive: appliedFilters.isActive,
                 sortBy,
@@ -150,7 +160,7 @@ export default function Warehouse(){
             businessMemberId,
             page,
             limit,
-            search,
+            appliedSearch,
             sortBy,
             sortOrder,
             fetchWarehouse,
@@ -180,7 +190,6 @@ export default function Warehouse(){
     };
 
     const handleApplyFilter = () => {
-        // kembali ke halaman pertama
         setPage(1);
         setAppliedFilters(filters);
     };
@@ -284,7 +293,6 @@ export default function Warehouse(){
                     </button>
 
                     <button
-                        
                         onClick={() => handleDelete(row)}
                         disabled={deletingId === row.id}
                         className="p-2 rounded-md hover:bg-red-50 text-red-600"
@@ -421,13 +429,13 @@ export default function Warehouse(){
                     );
                 }
                 handleCloseModal();
-                // refresh list
+
                 await fetchWarehouse({
                     businessId,
                     businessMemberId,
                     page,
                     limit,
-                    search,
+                    search : appliedSearch,
                     sortBy,
                     sortOrder,
                     ...appliedFilters,
@@ -468,7 +476,7 @@ export default function Warehouse(){
                 businessMemberId,
                 page,
                 limit,
-                search,
+                search : appliedSearch,
                 sortBy,
                 sortOrder,
                 ...appliedFilters,
@@ -494,11 +502,10 @@ export default function Warehouse(){
 
             await fetchWarehouse({
                 businessId,
-                businessMemberId:
-                    selectedBusinessMember.businessMemberId,
+                businessMemberId,
                 page,
                 limit,
-                search,
+                search : appliedSearch,
                 sortBy,
                 sortOrder,
                 ...appliedFilters,
@@ -508,11 +515,6 @@ export default function Warehouse(){
             setRefreshing(false);
         }
     };
-    // console.log("loading:", loading);
-    // console.log("warehouse:", warehouse);
-    // console.log("rows:", rows);
-    // console.log("meta:", meta);
-    // console.log("warehouseType:", warehouseType);
 
     return (
         <>
@@ -538,6 +540,12 @@ export default function Warehouse(){
                         <div className="flex gap-3">
                             <SearchInput value={search}
                                 onChange={(e)=> setSearch(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                        setAppliedSearch(search.trim());
+                                        setPage(1);
+                                    }
+                                }}
                                 placeholder="Search warehouse..."
                             />
                         </div>
@@ -574,7 +582,6 @@ export default function Warehouse(){
                                 onReset={handleResetFilter}
                             />
                         </div>
-                        
                     }
                 />
 
@@ -685,13 +692,8 @@ export default function Warehouse(){
 
                     <Select
                         name="warehouseTypeId"
-                        options={warehouseType}
-                        value={
-                            formik.values.warehouseTypeId
-                        }
-                        valueField="id"
-                        labelField="name"
-                        secondaryField="code"
+                        options={warehouseTypeOptions}
+                        value={formik.values.warehouseTypeId}
                         onChange={(value) =>
                             formik.setFieldValue(
                                 "warehouseTypeId",
@@ -699,7 +701,7 @@ export default function Warehouse(){
                             )
                         }
                     />
-
+    
                     {formik.touched.warehouseTypeId &&
                         formik.errors.warehouseTypeId && (
                             <p className="mt-1 text-xs text-red-500">

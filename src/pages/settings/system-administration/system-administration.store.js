@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import * as sysAdminService from "./system-administration.service.js";
+import { useAppStore } from "../../../store/appStore";
 
 const initialState = {
   error: null,
@@ -16,6 +17,7 @@ const initialState = {
 
     user: false,
     userByMemberAndRole: false,
+    userByMemberAndType:false,
     saveUser: false,
     updateUser: false,
     deleteUser: false,
@@ -56,7 +58,9 @@ export const sysAdminStore = create((set, get) => ({
 // *********************** BUSINESS ***********************//
     fetchBusiness: async (businessId) => {
         try {
-
+            // Global Loader ON
+            useAppStore.getState().setLoading(true);
+            
             get().setLoading(
                 "business",
                 true
@@ -79,6 +83,9 @@ export const sysAdminStore = create((set, get) => ({
                 "Failed to load data",
             });
         } finally {
+            // Global Loader ON
+            useAppStore.getState().setLoading(false);
+
             get().setLoading(
                 "business",
                 false
@@ -175,7 +182,7 @@ export const sysAdminStore = create((set, get) => ({
 
     updateBusinessMember:
       async (
-        businessId,
+        businessMemberId,
         payload
       ) => {
         
@@ -185,9 +192,9 @@ export const sysAdminStore = create((set, get) => ({
                 "updateBusinessMember",
                 true
             );
-
+            
             return await sysAdminService.updateBusinessMember(
-                businessId,
+                businessMemberId,
                 payload
             );
         } finally{
@@ -298,6 +305,41 @@ export const sysAdminStore = create((set, get) => ({
                 "user",
                 false
             );
+        }
+    },
+
+    fetchUserByMemberAndType: async (query) => {
+        try {
+            
+            get().setLoading(
+                "userByMemberAndType",
+                true
+            );
+
+            set({
+                userByMemberAndType:[],
+                error: null,
+            });
+            
+            const result = await sysAdminService.getUserByMemberAndType(query);
+
+            set({ userByMemberAndType: result.data.data });
+        
+        } catch (err) {
+            console.error(err);
+            
+            set({
+                error:
+                err.response?.result?.message ||
+                "Failed to load data",
+            });
+        } finally {
+
+            get().setLoading(
+                "userByMemberAndType",
+                false
+            );
+
         }
     },
 
@@ -577,6 +619,34 @@ export const sysAdminStore = create((set, get) => ({
         }
     },
 
+    saveUserMenus: async (userId, payload) => {
+        set((state) => ({
+            loading: {
+                ...state.loading,
+                userMenus: true,
+            },
+        }));
+
+        try {
+
+            const response = await sysAdminService.saveUserMenus(payload);
+            
+            // const response = await api.put(
+            //     `/api/system-administration/users/${userId}/menus`,
+            //     payload
+            // );
+
+            return response.data;
+        } finally {
+            set((state) => ({
+                loading: {
+                    ...state.loading,
+                    userMenus: false,
+                },
+            }));
+        }
+    },
+
     clearUserMenuList: () =>
         set({
             userMenuList: [],
@@ -596,12 +666,9 @@ export const sysAdminStore = create((set, get) => ({
             });
             
             const result = await sysAdminService.getRole(businessId);
-           
-            set({ roles: result.data.data.data });
-        
-        } catch (err) {
-            console.error(err);
+            set({role: result.data.data });
             
+        } catch (err) {          
             set({
                 error:
                 err.response?.result?.message ||
@@ -614,6 +681,43 @@ export const sysAdminStore = create((set, get) => ({
             );
         }
     },
+
+    fetchRoleOptions: async (query) => {
+    
+        try {
+            get().setLoading(
+                "roleOptions",
+                true
+            );
+
+            set({
+                    roleOptions: {
+                    data: []
+                },
+
+                error:null,
+            });
+
+            const result = await sysAdminService.getRoleOptions(query);            
+            set({ roleOptions: result.data.data });
+
+        } catch (err) {
+            console.error(err);
+
+            set({
+                error:
+                err.response?.data?.message ||
+                "Failed to load data",
+            });
+        } finally {
+            get().setLoading(
+                "roleOptions",
+                false
+            );
+        }
+    },
+
+    roleOptions:[],
 
     fetchRoleWithMenu : async (businessId,id) => {
         try {
@@ -742,24 +846,37 @@ export const sysAdminStore = create((set, get) => ({
     },
 
     // *********************** MENU ***********************//
+    menu: [],
+    menuFetched: false,
     fetchMenu: async () => {
+        const state = get();
+
+        if (state.menuFetched) {
+            return state.menu;
+        }
+
+        if (state.loading.menu) {
+            return state.menu;
+        }
+
+        set((state) => ({
+            loading: {
+                ...state.loading,
+                menu: true,
+            },
+        }));
+
         try {
 
-            get().setLoading(
-                "menu",
-                true
-            );
+            const response = await sysAdminService.getMenu();
+            const data = response.data.data.data;
 
             set({
-                menus:[],
-                error: null,
+                menu: data,
+                menuFetched: true,
             });
             
-            const result = await sysAdminService.getMenu();
-           
-            set({ menus: result.data.data.data });
-            
-            return result.data.data.data;
+            return data;
 
         } catch (err) {
             console.error(err);
@@ -770,12 +887,49 @@ export const sysAdminStore = create((set, get) => ({
                 "Failed to load data",
             });
         } finally {
-            get().setLoading(
-                "menu",
-                false
-            );
+            set((state) => ({
+            loading: {
+                ...state.loading,
+                menu: false,
+            },
+        }));
         }
     },
+
+    // fetchMenu: async () => {
+    //     try {
+
+    //         get().setLoading(
+    //             "menu",
+    //             true
+    //         );
+
+    //         set({
+    //             menus:[],
+    //             error: null,
+    //         });
+            
+    //         const result = await sysAdminService.getMenu();
+           
+    //         set({ menus: result.data.data.data });
+            
+    //         return result.data.data.data;
+
+    //     } catch (err) {
+    //         console.error(err);
+            
+    //         set({
+    //             error:
+    //             err.response?.result?.message ||
+    //             "Failed to load data",
+    //         });
+    //     } finally {
+    //         get().setLoading(
+    //             "menu",
+    //             false
+    //         );
+    //     }
+    // },
 
 
 }));

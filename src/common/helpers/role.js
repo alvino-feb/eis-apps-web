@@ -1,7 +1,6 @@
 export const SYSTEM_ROLE_CODES = [
-  "BA",
-  "CR",
-  "MA",
+  "BUSINESS_ADMINISTRATOR",
+  "MEMBER_ADMINISTRATOR"
 ];
 
 export const ROLE_PERMISSION = {
