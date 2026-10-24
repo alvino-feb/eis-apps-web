@@ -1,4 +1,5 @@
 import DataTableSkeleton from "../skeletons/DataTableSkeleton";
+import { Inbox } from "lucide-react";
 
 export default function DataTable({
   columns = [],
@@ -39,29 +40,44 @@ export default function DataTable({
         {loading && (
           <DataTableSkeleton
             columns={columns.length}
-            rows={5}
+            rows={2}
           />
         )}
 
-        {!hasData && (
+        {!loading && !hasData && (
           <tr>
-            <td
-              colSpan={safeColumns.length || 1}
-              className="py-10 text-center text-gray-500"
+            <td colSpan={safeColumns.length || 1} className="py-6"
             >
-              No records found
+              <div className="flex flex-col items-center gap-3 text-gray-500">
+                        <Inbox
+                            size={24}
+                        />
+                        <p>
+                            No records found
+                        </p>
+                    </div>
             </td>
           </tr>
         )}
 
         {hasData &&
           safeData.map((row, rowIndex) => (
-            <tr key={row.id ?? rowIndex} 
+            <tr 
+              key={row.id ?? rowIndex} 
               onClick={() => onRowClick?.(row)}
-              className="cursor-pointer">
+              className={`
+                  cursor-pointer border-b transition-colors
+                  ${
+                      selectedRowId === row.id
+                          ? "bg-blue-50"
+                          : "hover:bg-gray-50"
+                  }
+              `}
+            >
               {safeColumns.map((col) => (
-                <td key={`${rowIndex}-${col.key}`}
-                    className={col.cellClassName}
+                <td 
+                  key={`${rowIndex}-${col.key}`}
+                  className={col.cellClassName}
                   style={{
                     width: col.width,
                     minWidth: col.minWidth,

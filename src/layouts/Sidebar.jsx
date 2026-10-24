@@ -42,7 +42,7 @@ export default function Sidebar() {
     
     if (!userId) return;
 
-    fetchMenu(userId,businessId,businessMemberId);
+    fetchMenu(businessId,userId);
       }, 
     [
       userId,

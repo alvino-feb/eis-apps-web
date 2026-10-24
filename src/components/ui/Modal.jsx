@@ -12,7 +12,7 @@ export default function Modal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center  p-4 bg-black/40">
+    <div className="fixed inset-0 z-[50] flex items-center justify-center  p-4 bg-black/40">
       <div className={`bg-white rounded-lg shadow-xl w-full ${width} max-h-[85vh] flex flex-col`}>
         <div className="flex justify-between items-center px-5 py-4 border-b shrink-0">
           <h3 className="font-semibold">{title}</h3>
