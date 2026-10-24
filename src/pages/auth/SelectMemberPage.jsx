@@ -1,61 +1,38 @@
-import { useNavigate }
-from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import {
   LogOut,
   Store
 } from "lucide-react";
 
-import {
-  useAuthStore
-} from "../../store/authStore";
+import { useAuthStore } from "../../store/authStore";
 
 export default function SelectMemberPage() {
 
-  const navigate =
-    useNavigate();
+  const navigate = useNavigate();
 
-  const setBusinessMember =
-    useAuthStore(
-      (state) =>
-        state.setBusinessMember
-    );
+  const setBusinessMember = useAuthStore((state) => state.setBusinessMember);
+  const businessMembers = useAuthStore((state) => state.businessMembers);
+  const logout = useAuthStore((state) => state.logout);
 
-  const businessMembers =
-    useAuthStore(
-      (state) =>
-        state.businessMembers
-    );
-    
-  const logout =
-    useAuthStore(
-      (state) => state.logout
-  );
-
-  const handleSelect =
-    (member) => {
-
+  const handleSelect = (member) => {
       setBusinessMember(
         member
       );
 
       navigate("/");
-
   };
   
   const handleLogout = () => {
-
     logout();
 
     navigate(
       "/login",
       { replace: true }
     );
-
   };
 
   return (
-
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
       <div className="w-full max-w-3xl">
 
@@ -110,32 +87,11 @@ export default function SelectMemberPage() {
                 <button
                   key={member.businessMemberId}
                   onClick={() => handleSelect(member)}
-                  className="
-                    border
-                    rounded-xl
-                    p-4
-                    hover:border-blue-500
-                    hover:bg-blue-50/40
-                    transition
-                    text-left
-                  "
+                  className="border rounded-xl p-4 hover:border-blue-500 hover:bg-blue-50/40 transition text-left"
                 >
-
                   <div className="flex items-center justify-between">
-
                     <div className="flex items-center gap-3">
-
-                      <div
-                        className="
-                          w-10
-                          h-10
-                          rounded-lg
-                          bg-blue-100
-                          flex
-                          items-center
-                          justify-center
-                        "
-                      >
+                      <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
                         <Store size={18} />
                       </div>
 
@@ -151,21 +107,10 @@ export default function SelectMemberPage() {
 
                     </div>
 
-                    <span
-                      className="
-                        px-2
-                        py-1
-                        text-xs
-                        rounded-full
-                        bg-slate-100
-                        text-slate-600
-                      "
-                    >
+                    <span className="px-2 py-1 text-xs rounded-full bg-slate-100 text-slate-600">
                       {member.roleName}
                     </span>
-
                   </div>
-
                 </button>
 
               ))}

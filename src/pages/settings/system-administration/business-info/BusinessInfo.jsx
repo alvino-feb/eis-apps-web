@@ -4,7 +4,7 @@ import {
 
 import Business from "./Business";
 
-import BusinessMember from "./businessMember";
+import BusinessMember from "./BusinessMember";
 
 export default function BusinessInfo() {
 
